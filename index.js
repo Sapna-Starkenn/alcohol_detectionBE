@@ -1,9 +1,10 @@
 const express = require("express");
+require("dotenv").config();
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
 const mqtt = require("mqtt");
-const client = mqtt.connect("mqtt://192.168.0.235");
+const client = mqtt.connect(process.env.MQTT_IP);
 
 const app = express();
 app.use(cors());
@@ -64,7 +65,7 @@ function generateData(io) {
     // }, 500);
     client.on("message", (topic, message) => {
       let mqttData = JSON.parse(message.toString());
-
+      console.log(mqttData);
       accelVal = [prevVal, convertToRange(mqttData.Acceleration_input_voltage)];
 
       prevVal = convertToRange(mqttData.Acceleration_input_voltage);
@@ -72,9 +73,10 @@ function generateData(io) {
       const timestamp = Date.now() / 1000; // Convert milliseconds to seconds
       const dataPoint = {
         timestamp: timestamp,
+        alcohol: mqttData.Result_Alcohol,
+        img_url: mqttData.img_url,
         // acceleration: convertToRange(mqttData.Acceleration_input_voltage),
         acceleration: accelVal,
-        alcohol: false,
       };
 
       console.log(accelVal);
